@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Cash Job Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0f0f;
+    --card: #1a1a1a;
+    --card2: #222;
+    --border: #2e2e2e;
+    --green: #00e87a;
+    --green-dim: #00e87a22;
+    --red: #ff4d4d;
+    --red-dim: #ff4d4d1a;
+    --yellow: #ffd166;
+    --text: #f0f0f0;
+    --muted: #777;
+    --radius: 18px;
+    --font-display: 'Syne', sans-serif;
+    --font-mono: 'DM Mono', monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-display);
+    min-height: 100dvh;
+    padding: 0 0 40px;
+    overflow-x: hidden;
+  }
+
+  /* Header */
+  .header {
+    background: linear-gradient(160deg, #111 0%, #181818 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 56px 20px 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 200px; height: 200px;
+    background: radial-gradient(circle, #00e87a18 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .header-label {
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--green);
+    font-family: var(--font-mono);
+    margin-bottom: 6px;
+  }
+  .header h1 {
+    font-size: 28px;
+    font-weight: 800;
+    line-height: 1.1;
+    color: #fff;
+  }
+  .header h1 span { color: var(--green); }
+
+  /* Sections */
+  .section { padding: 20px 16px 0; }
+  .section-title {
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    margin-bottom: 12px;
+  }
+
+  /* Cards */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px;
+    margin-bottom: 12px;
+  }
+
+  /* Input rows */
+  .input-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .input-row:last-child { margin-bottom: 0; }
+  .input-label {
+    flex: 1;
+    font-size: 14px;
+    color: var(--muted);
+    font-family: var(--font-mono);
+  }
+  .input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+  .input-prefix {
+    position: absolute;
+    left: 12px;
+    font-family: var(--font-mono);
+    font-size: 14px;
+    color: var(--green);
+    pointer-events: none;
+  }
+  input[type="number"], input[type="text"] {
+    background: var(--card2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 16px;
+    padding: 10px 12px 10px 28px;
+    width: 130px;
+    text-align: right;
+    outline: none;
+    -webkit-appearance: none;
+    transition: border-color 0.2s;
+  }
+  input[type="number"]:focus {
+    border-color: var(--green);
+  }
+  input[type="number"]::-webkit-inner-spin-button { display: none; }
+
+  /* Big stat display */
+  .stat-block {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 18px;
+    margin-bottom: 12px;
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-block::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 4px; height: 100%;
+    background: var(--green);
+    border-radius: 4px 0 0 4px;
+  }
+  .stat-block.warn::after { background: var(--yellow); }
+  .stat-block.danger::after { background: var(--red); }
+
+  .stat-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .stat-value {
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--green);
+    font-family: var(--font-display);
+    line-height: 1;
+  }
+  .stat-value.warn { color: var(--yellow); }
+  .stat-value.danger { color: var(--red); }
+  .stat-sub {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  /* Progress bar */
+  .progress-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 18px;
+    margin-bottom: 12px;
+  }
+  .progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 14px;
+  }
+  .progress-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .progress-pct {
+    font-family: var(--font-mono);
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--green);
+  }
+  .progress-track {
+    background: var(--card2);
+    border-radius: 999px;
+    height: 10px;
+    overflow: hidden;
+    margin-bottom: 10px;
+  }
+  .progress-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #00e87a, #00c45a);
+    transition: width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    min-width: 0;
+  }
+  .progress-amounts {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  /* Hours log */
+  .log-entry-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .log-input {
+    flex: 1;
+    background: var(--card2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 15px;
+    padding: 11px 14px;
+    outline: none;
+    -webkit-appearance: none;
+    transition: border-color 0.2s;
+    min-width: 0;
+  }
+  .log-input:focus { border-color: var(--green); }
+  .log-input::-webkit-inner-spin-button { display: none; }
+
+  .btn {
+    border: none;
+    border-radius: 10px;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    padding: 11px 16px;
+    transition: opacity 0.15s, transform 0.1s;
+    white-space: nowrap;
+  }
+  .btn:active { opacity: 0.75; transform: scale(0.97); }
+  .btn-green { background: var(--green); color: #000; }
+  .btn-red { background: var(--red); color: #fff; font-size: 18px; padding: 10px 14px; }
+  .btn-outline {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 13px;
+    padding: 9px 14px;
+  }
+
+  /* Log list */
+  .log-list { list-style: none; }
+  .log-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+    animation: slideIn 0.25s ease;
+  }
+  .log-item:last-child { border-bottom: none; }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .log-item-left { flex: 1; }
+  .log-item-date {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 2px;
+  }
+  .log-item-desc {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .log-item-right { text-align: right; }
+  .log-item-gross {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--green);
+  }
+  .log-item-tax {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--red);
+    margin-top: 2px;
+  }
+
+  .empty-log {
+    text-align: center;
+    padding: 28px 0;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 13px;
+  }
+
+  /* Two-col grid */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .mini-stat {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px;
+  }
+  .mini-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+  .mini-value {
+    font-size: 20px;
+    font-weight: 800;
+  }
+  .mini-value.g { color: var(--green); }
+  .mini-value.r { color: var(--red); }
+  .mini-value.y { color: var(--yellow); }
+
+  /* Reset */
+  .reset-row {
+    padding: 10px 16px 0;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  hr { border: none; border-top: 1px solid var(--border); margin: 6px 0; }
+
+  /* Tip badge */
+  .tip {
+    background: var(--green-dim);
+    border: 1px solid #00e87a33;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--green);
+    margin-bottom: 12px;
+    line-height: 1.5;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-label">Ontario · Cash Job</div>
+  <h1>Savings<br><span>Tracker</span></h1>
+</div>
+
+<!-- SETTINGS -->
+<div class="section">
+  <div class="section-title">Settings</div>
+  <div class="card">
+    <div class="input-row">
+      <span class="input-label">Hourly Rate</span>
+      <div class="input-wrap">
+        <span class="input-prefix">$</span>
+        <input type="number" id="rate" value="40" min="1" step="0.5">
+      </div>
+    </div>
+    <div class="input-row">
+      <span class="input-label">Tax Set-Aside</span>
+      <div class="input-wrap">
+        <span class="input-prefix" style="color:var(--red)">%</span>
+        <input type="number" id="taxRate" value="30" min="1" max="60" step="1">
+      </div>
+    </div>
+    <div class="input-row">
+      <span class="input-label">Savings Goal</span>
+      <div class="input-wrap">
+        <span class="input-prefix">$</span>
+        <input type="number" id="goal" value="0" min="0" step="100" placeholder="0">
+      </div>
+    </div>
+    <div class="input-row" style="margin-top:4px;">
+      <span class="input-label" style="font-size:12px; color:#555">Goal label (optional)</span>
+      <input type="text" id="goalLabel" placeholder="e.g. New truck" style="background:var(--card2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:var(--font-mono);font-size:13px;padding:9px 12px;width:140px;outline:none;">
+    </div>
+  </div>
+</div>
+
+<!-- LOG HOURS -->
+<div class="section">
+  <div class="section-title">Log Hours</div>
+  <div class="card">
+    <div class="log-entry-row">
+      <input class="log-input" type="number" id="hoursInput" placeholder="Hours worked" min="0.5" step="0.5">
+      <input class="log-input" type="text" id="noteInput" placeholder="Note (optional)" style="font-size:13px;">
+      <button class="btn btn-green" onclick="addEntry()">Add</button>
+    </div>
+    <div class="tip">💡 Per hour: keep <strong id="keepAmt">$34.80</strong>, set aside <strong id="taxAmt" style="color:var(--red)">$5.20</strong> for tax</div>
+  </div>
+</div>
+
+<!-- TOTALS -->
+<div class="section">
+  <div class="section-title">Summary</div>
+
+  <div class="two-col">
+    <div class="mini-stat">
+      <div class="mini-label">Total Hours</div>
+      <div class="mini-value g" id="totalHours">0</div>
+    </div>
+    <div class="mini-stat">
+      <div class="mini-label">Gross Earned</div>
+      <div class="mini-value g" id="grossEarned">$0</div>
+    </div>
+    <div class="mini-stat">
+      <div class="mini-label">Tax Reserve</div>
+      <div class="mini-value r" id="taxReserve">$0</div>
+    </div>
+    <div class="mini-stat">
+      <div class="mini-label">Spendable</div>
+      <div class="mini-value y" id="spendable">$0</div>
+    </div>
+  </div>
+
+  <!-- Progress toward goal -->
+  <div class="progress-card" id="goalCard">
+    <div class="progress-header">
+      <span class="progress-title" id="goalName">Savings Goal</span>
+      <span class="progress-pct" id="progressPct">0%</span>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progressFill" style="width:0%"></div>
+    </div>
+    <div class="progress-amounts">
+      <span id="savedAmt">$0 saved</span>
+      <span id="goalAmt">Goal: $0</span>
+    </div>
+  </div>
+
+  <div class="stat-block" id="hoursNeededBlock">
+    <div class="stat-label">Hours to Reach Goal</div>
+    <div class="stat-value" id="hoursNeeded">—</div>
+    <div class="stat-sub" id="hoursNeededSub">Set a goal above</div>
+  </div>
+</div>
+
+<!-- HOURS LOG -->
+<div class="section">
+  <div class="section-title">Work Log</div>
+  <div class="card" style="padding: 8px 12px;">
+    <ul class="log-list" id="logList">
+      <li class="empty-log">No hours logged yet</li>
+    </ul>
+  </div>
+</div>
+
+<div class="reset-row">
+  <button class="btn btn-outline" onclick="confirmReset()">⚠ Reset All Data</button>
+</div>
+
+<script>
+  const TAX_RATE_DEFAULT = 0.13;
+
+  // State
+  let state = loadState();
+
+  function loadState() {
+    try {
+      const s = localStorage.getItem('cashTrackerState');
+      const parsed = s ? JSON.parse(s) : defaultState();
+      parsed.taxRate = 30; // always reset to 30% on load
+      return parsed;
+    } catch { return defaultState(); }
+  }
+
+  function defaultState() {
+    return { entries: [], rate: 40, taxRate: 30, goal: 0, goalLabel: '' };
+  }
+
+  function saveState() {
+    localStorage.setItem('cashTrackerState', JSON.stringify(state));
+  }
+
+  // Init inputs from state
+  document.getElementById('rate').value = state.rate;
+  document.getElementById('taxRate').value = state.taxRate;
+  document.getElementById('goal').value = state.goal;
+  document.getElementById('goalLabel').value = state.goalLabel;
+
+  // Wire up settings inputs
+  ['rate','taxRate','goal'].forEach(id => {
+    document.getElementById(id).addEventListener('input', () => {
+      state[id] = parseFloat(document.getElementById(id).value) || 0;
+      saveState(); render();
+    });
+  });
+  document.getElementById('goalLabel').addEventListener('input', () => {
+    state.goalLabel = document.getElementById('goalLabel').value;
+    saveState(); render();
+  });
+
+  function addEntry() {
+    const hours = parseFloat(document.getElementById('hoursInput').value);
+    if (!hours || hours <= 0) { shake('hoursInput'); return; }
+    const note = document.getElementById('noteInput').value.trim();
+    const now = new Date();
+    state.entries.unshift({
+      hours,
+      note: note || null,
+      date: now.toLocaleDateString('en-CA', { month:'short', day:'numeric', year:'numeric' }),
+      ts: now.getTime()
+    });
+    document.getElementById('hoursInput').value = '';
+    document.getElementById('noteInput').value = '';
+    saveState(); render();
+  }
+
+  function removeEntry(idx) {
+    state.entries.splice(idx, 1);
+    saveState(); render();
+  }
+
+  function confirmReset() {
+    if (confirm('Reset all logged hours? Settings will be kept.')) {
+      state.entries = [];
+      saveState(); render();
+    }
+  }
+
+  function shake(id) {
+    const el = document.getElementById(id);
+    el.style.borderColor = 'var(--red)';
+    el.style.transform = 'translateX(-4px)';
+    setTimeout(() => { el.style.transform = 'translateX(4px)'; }, 80);
+    setTimeout(() => { el.style.transform = ''; }, 160);
+    setTimeout(() => { el.style.borderColor = ''; }, 800);
+  }
+
+  function fmt(n) {
+    return '$' + n.toLocaleString('en-CA', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function render() {
+    const rate = state.rate || 40;
+    const taxPct = (state.taxRate || 13) / 100;
+    const goal = state.goal || 0;
+
+    // Per-hour tip
+    const taxPerHr = rate * taxPct;
+    const keepPerHr = rate - taxPerHr;
+    document.getElementById('keepAmt').textContent = fmt(keepPerHr);
+    document.getElementById('taxAmt').textContent = fmt(taxPerHr);
+
+    // Totals
+    const totalHours = state.entries.reduce((s, e) => s + e.hours, 0);
+    const gross = totalHours * rate;
+    const taxReserve = gross * taxPct;
+    const spendable = gross - taxReserve;
+
+    document.getElementById('totalHours').textContent = totalHours % 1 === 0 ? totalHours : totalHours.toFixed(1);
+    document.getElementById('grossEarned').textContent = fmt(gross);
+    document.getElementById('taxReserve').textContent = fmt(taxReserve);
+    document.getElementById('spendable').textContent = fmt(spendable);
+
+    // Progress
+    const goalLabel = state.goalLabel || 'Savings Goal';
+    document.getElementById('goalName').textContent = goalLabel;
+    document.getElementById('goalAmt').textContent = 'Goal: ' + fmt(goal);
+    document.getElementById('savedAmt').textContent = fmt(spendable) + ' saved';
+
+    const pct = goal > 0 ? Math.min(100, (spendable / goal) * 100) : 0;
+    document.getElementById('progressPct').textContent = goal > 0 ? Math.floor(pct) + '%' : '—';
+    document.getElementById('progressFill').style.width = pct + '%';
+
+    // Hours needed
+    const hBlock = document.getElementById('hoursNeededBlock');
+    const hVal = document.getElementById('hoursNeeded');
+    const hSub = document.getElementById('hoursNeededSub');
+    if (goal > 0 && rate > 0) {
+      const remaining = Math.max(0, goal - spendable);
+      const netPerHr = rate * (1 - taxPct);
+      const hrsNeeded = remaining / netPerHr;
+      if (remaining <= 0) {
+        hVal.textContent = '🎉 Done!';
+        hVal.className = 'stat-value';
+        hSub.textContent = goalLabel + ' is fully funded';
+        hBlock.className = 'stat-block';
+      } else {
+        hVal.textContent = hrsNeeded % 1 < 0.1 ? Math.ceil(hrsNeeded) + ' hrs' : hrsNeeded.toFixed(1) + ' hrs';
+        hVal.className = 'stat-value warn';
+        hSub.textContent = fmt(remaining) + ' still needed @ ' + fmt(netPerHr) + '/hr net';
+        hBlock.className = 'stat-block warn';
+      }
+    } else {
+      hVal.textContent = '—';
+      hVal.className = 'stat-value';
+      hSub.textContent = 'Set a goal above';
+      hBlock.className = 'stat-block';
+    }
+
+    // Log list
+    const list = document.getElementById('logList');
+    if (state.entries.length === 0) {
+      list.innerHTML = '<li class="empty-log">No hours logged yet</li>';
+    } else {
+      list.innerHTML = state.entries.map((e, i) => {
+        const gross_e = e.hours * rate;
+        const tax_e = gross_e * taxPct;
+        return `<li class="log-item">
+          <div class="log-item-left">
+            <div class="log-item-date">${e.date}</div>
+            <div class="log-item-desc">${e.hours % 1 === 0 ? e.hours : e.hours.toFixed(1)} hrs${e.note ? ' · ' + e.note : ''}</div>
+          </div>
+          <div class="log-item-right">
+            <div class="log-item-gross">${fmt(gross_e)}</div>
+            <div class="log-item-tax">−${fmt(tax_e)} tax</div>
+          </div>
+          <button onclick="removeEntry(${i})" class="btn btn-red" style="margin-left:10px; font-size:16px; padding:8px 10px; background:transparent; color:#555; border:1px solid var(--border)">✕</button>
+        </li>`;
+      }).join('');
+    }
+  }
+
+  render();
+</script>
+</body>
+</html>
