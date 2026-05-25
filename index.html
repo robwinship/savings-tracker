@@ -494,7 +494,6 @@
     try {
       const s = localStorage.getItem('cashTrackerState');
       const parsed = s ? JSON.parse(s) : defaultState();
-      parsed.taxRate = 30; // always reset to 30% on load
       return parsed;
     } catch { return defaultState(); }
   }
